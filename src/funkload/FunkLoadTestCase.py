@@ -47,6 +47,7 @@ import PatchWebunit
 from utils import get_default_logger, mmn_is_bench, mmn_decode, Data
 from utils import recording, thread_sleep, is_html, get_version, trace
 from xmlrpclib import ServerProxy
+from string import split
 
 _marker = []
 
@@ -316,6 +317,14 @@ class FunkLoadTestCase(unittest.TestCase):
                 # Figure the location - which may be relative
                 newurl = response.headers['Location']
                 url = urljoin(url_in, newurl)
+
+                # handle relative paths inside url
+                # i.e. http://f.b/c/d/../../e/f.html
+                components = split(url, "..")
+                url = components[0]
+                for c in components[1:]:
+                    url = urljoin(url, ".." + c)
+
                 # Save the current url as the base for future redirects
                 url_in = url
                 self.logd(' Load redirect link: %s' % url)
